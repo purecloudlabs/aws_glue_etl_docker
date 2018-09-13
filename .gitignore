@@ -1,0 +1,8 @@
+/env/
+/*.egg-info
+/examples/.ipynb_checkpoints
+/examples/parquet*
+/examples/csv
+
+startDevEnv.sh
+
