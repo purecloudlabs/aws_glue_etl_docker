@@ -2,60 +2,68 @@ import json
 import os
 import argparse
 import glob
+from pprint import pprint
 
 def cleanWorkbooks(path):
     print('cleaning workbooks ' + path)
     print(glob.glob(path + "/*.ipynb"))
     for workbook in glob.glob(path + "/*.ipynb"):
-        print(workbook)
         input_file = open (workbook)
         notebookContents = json.load(input_file)
-        print(notebookContents)
+
+        for cell in notebookContents['cells']:
+            if 'metadata' in cell:
+                cell['metadata'] = {}
+
+            if 'outputs' in cell:
+                cell['outputs'] = []
+
+            if 'execution_count' in cell:
+                cell['execution_count'] = 0
+
+        pprint(notebookContents)
 
 def buildWorkbooks(path, outputdir):
+    if not os.path.exists(outputdir):
+        os.makedirs(outputdir)
+
     for workbook in glob.glob(path + "/*.ipynb"):
         print(os.path.basename(workbook))
 
+        with open(workbook) as fp:
+            for i, line in enumerate(fp):
+                if "\xe2" in line:
+                    print i, repr(line)
         input_file = open (workbook)
         notebookContents = json.load(input_file)
 
-        out = open('{}/{}.py'.format(outputdir, workbook.replace("ipynb","py")), 'w')
+        out = open('{}/{}'.format(outputdir, workbook.replace(path, "").replace("ipynb","py")), 'w+')
 
         for cell in notebookContents['cells']:
             if cell['cell_type'] == "code" and len(cell['source']) > 0 and "#LOCALDEV" not in cell['source'][0]:
                 for line in cell['source']:
-                    out.write(line)
-
+                    if line[0] != '!':
+                        out.write(line)
+            elif cell['cell_type'] == "markdown":
+                
+                out.write('\n\'\'\'\n')
+                for line in cell['source']:
+                    out.write("#" + line)
+                out.write('\n\'\'\'\n')
 
 
 def main(args):
     if args.command == "clean":
         cleanWorkbooks(args.path)
     elif args.command == "build":
-        buildWorkbooks(args.path, arga.outdir)
-    # dir_path = os.path.dirname(os.path.realpath(__file__))
-
-    # notebooks = ['PublicRequestsLocalRegion', 'PublicRequestsNonBookmarked']
-
-    # for notebook in notebooks:
-    #     input_file = open ('{}.ipynb'.format(notebook))
-    #     notebookContents = json.load(input_file)
-
-
-    #     out = open('{}/../src/main/resources/{}.py'.format(dir_path, notebook), 'w')
-
-    #     for cell in notebookContents['cells']:
-    #         if cell['cell_type'] == "code" and len(cell['source']) > 0 and "#LOCALDEV" not in cell['source'][0]:
-    #             for line in cell['source']:
-    #                 out.write(line)
-
-
+        buildWorkbooks(args.path, args.outdir)
+        
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
 
-	# Required arguments
-	parser.add_argument('command', help='Command to run (clean, build)')
-	parser.add_argument('--path', help='Path to workbooks')
-    parser.add_argument('--outdir', help='Output Path')
-	args = parser.parse_args()
-	main(args)
+    parser.add_argument('command', help='Command to run (clean, build)')
+    parser.add_argument('--path', help='Path to workbooks')
+    parser.add_argument('--outdir', help='Output path')
+    
+    args = parser.parse_args()
+    main(args)

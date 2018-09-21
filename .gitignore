@@ -3,6 +3,9 @@
 /examples/.ipynb_checkpoints
 /examples/parquet*
 /examples/csv
-
+/examples/exampleoutput/*
+/out/
 startDevEnv.sh
-
+*.zip
+.vscode
+aws_glue_etl_jupyter_deploy

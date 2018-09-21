@@ -28,7 +28,7 @@ def _write_parquet(dataframe, bucket, location, partition_column, dataset_name, 
         dataframe.write.parquet(output_path)
 
 def _get_spark_context():
-    return pyspark.SparkContext.getOrCreate()
+    return (pyspark.SparkContext.getOrCreate(), None)
 
 def _get_all_files_with_prefix(bucket, prefix, spark_context):
     pathToWalk = '/data/' + bucket + '/' + prefix +'**/*.*'   
@@ -39,6 +39,9 @@ def _is_in_aws():
 
 def _get_arguments(default):
     return default
+
+def _finish(self):
+    return None
 
 try:
     from awsglue.transforms import *
@@ -101,7 +104,7 @@ try:
         args = _get_arguments({})
         job.init(args['JOB_NAME'], args)
         
-        return spark_context
+        return (spark_context, job)
 
     def _get_all_files_with_prefix(bucket, prefix, spark_context):
         prefixes = set()
@@ -122,30 +125,82 @@ try:
 
     def _is_in_aws():
         return True
+
+    def _finish(self):
+        if self.job:
+            try:
+                self.job.commit()
+            except NameError:
+                print("unable to commit job")
+
     
 except Exception as e:
     print('local dev')
     
 class GlueShim:    
     def __init__(self):
-        self.spark_context = _get_spark_context()
+        c = _get_spark_context()
+        self.spark_context = c[0]
+        self.job = c[1]
         
     def arguments(self, defaults):
+        """Gets the arguments for a job.  When running in glue, the response is pulled form sys.argv
+
+        Keyword arguments:
+        defaults -- default dictionary of options
+        """
         return _get_arguments(defaults)    
         
     def load_data(self, file_paths, dataset_name):
+        """Loads data into a dataframe
+
+        Keyword arguments:
+        file_paths -- list of file paths to pull from, either absolute paths or s3:// uris
+        dataset_name -- name of this dataset, used for glue bookmarking
+        """
         return _load_data(file_paths, dataset_name, self.spark_context)
     
     def get_all_files_with_prefix(self, bucket, prefix):
+        """Given a bucket and file prefix, this method will return a list of all files with that prefix
+
+        Keyword arguments:
+        bucket -- bucket name
+        prefix -- filename prefix
+        """
         return _get_all_files_with_prefix(bucket, prefix, self.spark_context)
 
     def write_parquet(self, dataframe, bucket, location, partition_column, dataset_name):
+        """Writes a dataframe in parquet format
+
+        Keyword arguments:
+        dataframe -- dataframe to write out
+        bucket -- Output bucket name
+        location -- Output filename prefix
+        partition_column -- string or list of strings to partition by, None for default partitions
+        dataset_name - dataset name, will be appended to location
+
+        """
         _write_parquet(dataframe, bucket, location, partition_column, dataset_name, self.spark_context)
         
     def write_csv(self, dataframe, bucket, location, dataset_name):
+        """Writes a dataframe in csv format with a partition count of 1
+
+        Keyword arguments:
+        dataframe -- dataframe to write out
+        bucket -- Output bucket name
+        location -- Output filename prefix
+        dataset_name - dataset name, will be appended to location
+
+        """
         _write_csv(dataframe, bucket, location, dataset_name, self.spark_context)
             
     def get_spark_context(self):
+        """ Gets the spark context """
         return self.context
+
+    def finish(self):
+        """ Should be run at the end, will set Glue bookmarks """
+        _finish()
+
 
  

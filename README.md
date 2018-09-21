@@ -5,8 +5,8 @@ This project is a helper for creating scripts that run in both [AWS Glue](https:
 Glue has specific methods to load and save data to s3 which won't work 
 
 ```python
-from aws_glue_etl_jupyter import GlueShim
-shim = GlueShim()
+from aws_glue_etl_jupyter import glueshim
+shim = glueshim.GlueShim()
 
 params = shim.arguments({'data_bucket': "examples"})
 pprint(params)
@@ -38,11 +38,15 @@ Running locally is easiest in a docker container
 
 ```python
 import sys
-!{sys.executable} -m pip install numpy
+!{sys.executable} -m pip install git+https://github.com/purecloudlabs/aws_glue_etl_jupyter
 ```
 
-
 ## AWS Deployment
+For deployment to AWS, this library must be packaged and put into S3. You can use the helper script deploytos3.sh to package and copy.  
+
+Usage ```./deploytos3.sh s3://example-bucket/myprefix/aws-glue-etl-jupyter.zip
+
+Then when starting the glue job, use your S3 zip path in the _Python library path_ configuration
 
 ## Bookmarks
 The shim is currently setup to delete any data in the output folder so that if you run with bookmarks enabled and then need to reprocess the entire dataset and 
