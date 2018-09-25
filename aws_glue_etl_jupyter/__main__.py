@@ -21,7 +21,9 @@ def cleanWorkbooks(path):
             if 'execution_count' in cell:
                 cell['execution_count'] = 0
 
-        pprint(notebookContents)
+        with open(workbook, 'w') as out:
+            json.dump(notebookContents, out, indent=4, separators=(',', ': '))
+
 
 def buildWorkbooks(path, outputdir):
     if not os.path.exists(outputdir):
@@ -30,10 +32,11 @@ def buildWorkbooks(path, outputdir):
     for workbook in glob.glob(path + "/*.ipynb"):
         print(os.path.basename(workbook))
 
-        with open(workbook) as fp:
-            for i, line in enumerate(fp):
-                if "\xe2" in line:
-                    print i, repr(line)
+        # with open(workbook) as fp:
+        #     for i, line in enumerate(fp):
+        #         if "\xe2" in line:
+        #             print i, repr(line)
+
         input_file = open (workbook)
         notebookContents = json.load(input_file)
 
