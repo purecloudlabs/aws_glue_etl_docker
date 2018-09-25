@@ -52,13 +52,7 @@ def buildWorkbooks(path, outputdir):
                 out.write('\n\'\'\'\n')
 
 
-def main(args):
-    if args.command == "clean":
-        cleanWorkbooks(args.path)
-    elif args.command == "build":
-        buildWorkbooks(args.path, args.outdir)
-        
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('command', help='Command to run (clean, build)')
@@ -66,4 +60,11 @@ if __name__ == '__main__':
     parser.add_argument('--outdir', help='Output path')
     
     args = parser.parse_args()
-    main(args)
+
+    if args.command == "clean":
+        cleanWorkbooks(args.path)
+    elif args.command == "build":
+        buildWorkbooks(args.path, args.outdir)
+        
+if __name__ == '__main__':
+    main()
