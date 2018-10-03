@@ -16,14 +16,14 @@ def _write_csv(dataframe, bucket, location, dataset_name, spark_context):
     shutil.rmtree(output_path, True)
     dataframe.repartition(1).write.format("com.databricks.spark.csv").option("header","true").save(output_path)
 
-def _write_parquet(dataframe, bucket, location, partition_column, dataset_name, spark_context):
+def _write_parquet(dataframe, bucket, location, partition_columns, dataset_name, spark_context):
 
     output_path = '/data/' + bucket + '/' + location
 
     shutil.rmtree(output_path, True)
 
-    if partition_column != None and len(partition_column) > 0:
-        dataframe.write.partitionBy(partition_column).parquet(output_path)
+    if partition_columns != None and len(partition_columns) > 0:
+        dataframe.write.partitionBy(partition_columns).parquet(output_path)
     else:
         dataframe.write.parquet(output_path)
 
@@ -84,15 +84,18 @@ try:
                 delete_keys = {'Objects' : []}
 
                 
-    def _write_parquet(dataframe, bucket, location, partition_column, dataset_name, spark_context):
+    def _write_parquet(dataframe, bucket, location, partition_columns, dataset_name, spark_context):
         if "job-bookmark-disable" in sys.argv:
             _delete_files_with_prefix(bucket, location)
 
         output_path = "s3://" + bucket + "/" + location
 
         df_tmp = DynamicFrame.fromDF(dataframe, spark_context, dataset_name)
-        if partition_column != None and len(partition_column) > 0:
-            spark_context.write_dynamic_frame.from_options(frame = df_tmp, connection_type = "s3", connection_options = {"path": output_path, "partitionKeys": [partition_column] }, format = "parquet")
+
+        print("Writing to {} ".format(output_path))
+
+        if partition_columns != None and len(partition_columns) > 0:
+            spark_context.write_dynamic_frame.from_options(frame = df_tmp, connection_type = "s3", connection_options = {"path": output_path, "partitionKeys": partition_columns }, format = "parquet")
         else:
             spark_context.write_dynamic_frame.from_options(frame = df_tmp, connection_type = "s3", connection_options = {"path": output_path }, format = "parquet")
 
@@ -169,18 +172,18 @@ class GlueShim:
         """
         return _get_all_files_with_prefix(bucket, prefix, self.spark_context)
 
-    def write_parquet(self, dataframe, bucket, location, partition_column, dataset_name):
+    def write_parquet(self, dataframe, bucket, location, partition_columns, dataset_name):
         """Writes a dataframe in parquet format
 
         Keyword arguments:
         dataframe -- dataframe to write out
         bucket -- Output bucket name
         location -- Output filename prefix
-        partition_column -- string or list of strings to partition by, None for default partitions
+        partition_columns -- list of strings to partition by, None for default partitions
         dataset_name - dataset name, will be appended to location
 
         """
-        _write_parquet(dataframe, bucket, location, partition_column, dataset_name, self.spark_context)
+        _write_parquet(dataframe, bucket, location, partition_columns, dataset_name, self.spark_context)
         
     def write_csv(self, dataframe, bucket, location, dataset_name):
         """Writes a dataframe in csv format with a partition count of 1
@@ -200,7 +203,7 @@ class GlueShim:
 
     def finish(self):
         """ Should be run at the end, will set Glue bookmarks """
-        _finish()
+        _finish(self)
 
 
  

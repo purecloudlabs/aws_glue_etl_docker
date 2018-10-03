@@ -22,7 +22,7 @@ def cleanWorkbooks(path):
                 cell['execution_count'] = 0
 
         with open(workbook, 'w') as out:
-            json.dump(notebookContents, out, indent=4, separators=(',', ': '))
+            json.dump(notebookContents, out, indent=1, separators=(',', ': '))
 
 
 def buildWorkbooks(path, outputdir):
