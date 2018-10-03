@@ -91,9 +91,10 @@ try:
         output_path = "s3://" + bucket + "/" + location
 
         df_tmp = DynamicFrame.fromDF(dataframe, spark_context, dataset_name)
-
-        print("Writing to {} ".format(output_path))
-
+        
+        print("Writing {} rows to {} ".format(output_path, df_tmp.count()))
+        print(partition_columns)
+    
         if partition_columns != None and len(partition_columns) > 0:
             spark_context.write_dynamic_frame.from_options(frame = df_tmp, connection_type = "s3", connection_options = {"path": output_path, "partitionKeys": partition_columns }, format = "parquet")
         else:
@@ -199,7 +200,7 @@ class GlueShim:
             
     def get_spark_context(self):
         """ Gets the spark context """
-        return self.context
+        return self.spark_context
 
     def finish(self):
         """ Should be run at the end, will set Glue bookmarks """
