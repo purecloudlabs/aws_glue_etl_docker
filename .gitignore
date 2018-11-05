@@ -8,4 +8,4 @@
 startDevEnv.sh
 *.zip
 .vscode
-aws_glue_etl_jupyter_deploy
+aws_glue_etl_docker_deploy

@@ -5,7 +5,7 @@ This project is a helper for creating scripts that run in both [AWS Glue](https:
 Glue has specific methods to load and save data to s3 which won't work when running in a jupyter notebook.  The glueshim provides a higher level api to work in both scenarios.  
 
 ```python
-from aws_glue_etl_jupyter import glueshim
+from aws_glue_etl_docker import glueshim
 shim = glueshim.GlueShim()
 
 params = shim.arguments({'data_bucket': "examples"})
@@ -40,7 +40,7 @@ Running locally is easiest in a docker container
 
 ```python
 import sys
-!{sys.executable} -m pip install git+https://github.com/purecloudlabs/aws_glue_etl_jupyter
+!{sys.executable} -m pip install git+https://github.com/purecloudlabs/aws_glue_etl_docker
 ```
 
 ## AWS Deployment
@@ -55,16 +55,16 @@ The shim is currently setup to delete any data in the output folder so that if y
 
 ## Converting Workbook to Python Script
 
-aws_glue_etl_jupyter can also be used as a cli tool to clean up Jupyter metadata from a workbook or convert it to a python script.
+aws_glue_etl_docker can also be used as a cli tool to clean up Jupyter metadata from a workbook or convert it to a python script.
 
 ## Clean
 
 The clean command will open all workbooks in a given path and remove any metadata, output and execution information. This keeps the workbooks cleaner in source control
 
-``` aws_glue_etl_jupyter clean --path /dir/to/workbooks  ```
+``` aws_glue_etl_docker clean --path /dir/to/workbooks  ```
 
 ## Build
 
-The build command will open all workbooks in a given path and convert them to python scripts.  Build will convert any markdown cells to multiline comments.  This command will not convert any cells that contain ```#LOCALDEV``` or lines that start with ```!``` as in ```!{sys.executable} -m pip install git+https://github.com/purecloudlabs/aws_glue_etl_jupyter```
+The build command will open all workbooks in a given path and convert them to python scripts.  Build will convert any markdown cells to multiline comments.  This command will not convert any cells that contain ```#LOCALDEV``` or lines that start with ```!``` as in ```!{sys.executable} -m pip install git+https://github.com/purecloudlabs/aws_glue_etl_docker```
 
-``` aws_glue_etl_jupyter build --path /dir/to/workbooks  ```
+``` aws_glue_etl_docker build --path /dir/to/workbooks  ```
