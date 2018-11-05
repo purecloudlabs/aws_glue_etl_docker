@@ -6,7 +6,7 @@ import pyspark
 from pyspark import SparkConf, SparkContext, SQLContext
 from pprint import pprint
 
-def _load_data(filePaths, dataset_name, spark_context):
+def _load_data(filePaths, dataset_name, spark_context, groupfiles, groupsize):
     sqlContext = SQLContext(spark_context)
     return sqlContext.read.json(filePaths)
 
@@ -51,9 +51,18 @@ try:
     from awsglue.job import Job
     import boto3
     
-    def _load_data(file_paths, dataset_name, context):
+    def _load_data(file_paths, dataset_name, context, groupfiles, groupsize):
+
+        connection_options = {'paths': file_paths}
+
+        if groupfiles != None:
+            connection_options["groupFiles"] = groupfiles
+
+        if groupsize != None:
+            connection_options["groupSize"] = groupsize
+
         glue0 = context.create_dynamic_frame.from_options(connection_type='s3',
-                                                      connection_options={'paths': file_paths},
+                                                      connection_options=connection_options,
                                                       format='json',
                                                       transformation_ctx=dataset_name)
 
@@ -145,6 +154,8 @@ class GlueShim:
         c = _get_spark_context()
         self.spark_context = c[0]
         self.job = c[1]
+        self._groupfiles = None
+        self._groupsize = None
         
     def arguments(self, defaults):
         """Gets the arguments for a job.  When running in glue, the response is pulled form sys.argv
@@ -161,7 +172,7 @@ class GlueShim:
         file_paths -- list of file paths to pull from, either absolute paths or s3:// uris
         dataset_name -- name of this dataset, used for glue bookmarking
         """
-        return _load_data(file_paths, dataset_name, self.spark_context)
+        return _load_data(file_paths, dataset_name, self.spark_context, self._groupfiles, self._groupsize)
     
     def get_all_files_with_prefix(self, bucket, prefix):
         """Given a bucket and file prefix, this method will return a list of all files with that prefix
@@ -205,5 +216,9 @@ class GlueShim:
         """ Should be run at the end, will set Glue bookmarks """
         _finish(self)
 
+    def set_group_files_and_size(self, groupfiles, groupsize):
+         """ Sets extra options used with glue https://docs.aws.amazon.com/glue/latest/dg/grouping-input-files.html """
+        self._groupfiles = groupfiles
+        self._groupsize = groupsize
 
  
