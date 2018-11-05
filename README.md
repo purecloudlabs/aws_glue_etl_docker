@@ -1,5 +1,5 @@
-# AWS Glue ETL in Jupyter
-This project is a helper for creating scripts that run in both [AWS Glue](https://aws.amazon.com/glue/) and [Jupyter](http://jupyter.org/) notebooks.  Glue supports running [Zepplin notebooks](https://docs.aws.amazon.com/glue/latest/dg/dev-endpoint-tutorial-EC2-notebook.html) against a dev endpoint, but for quick dev sometimes you just want to run locally against a subset of data and don't want to have to pay to keep the dev endpoints running.
+# AWS Glue ETL in Docker and Jupyter
+This project is a helper for creating scripts that run in both [AWS Glue](https://aws.amazon.com/glue/), [Jupyter](http://jupyter.org/) notebooks, and in docker containers with spark-submit.  Glue supports running [Zepplin notebooks](https://docs.aws.amazon.com/glue/latest/dg/dev-endpoint-tutorial-EC2-notebook.html) against a dev endpoint, but for quick dev sometimes you just want to run locally against a subset of data and don't want to have to pay to keep the dev endpoints running.
 
 ## Glue Shim
 Glue has specific methods to load and save data to s3 which won't work when running in a jupyter notebook.  The glueshim provides a higher level api to work in both scenarios.  
