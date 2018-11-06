@@ -217,7 +217,7 @@ class GlueShim:
         _finish(self)
 
     def set_group_files_and_size(self, groupfiles, groupsize):
-         """ Sets extra options used with glue https://docs.aws.amazon.com/glue/latest/dg/grouping-input-files.html """
+        """ Sets extra options used with glue https://docs.aws.amazon.com/glue/latest/dg/grouping-input-files.html """
         self._groupfiles = groupfiles
         self._groupsize = groupsize
 
