@@ -124,7 +124,7 @@ try:
         paginator = s3.get_paginator('list_objects')
         pages = paginator.paginate(Bucket=bucket, Prefix=prefix)
         for page in pages:
-            if page['Contents']:
+            if 'Contents' in page and page['Contents']:
                 for obj in page['Contents']:
                     if not obj['Key'].endswith('/') and '/' in obj['Key']:
                         idx = obj['Key'].rfind('/')
@@ -216,9 +216,10 @@ class GlueShim:
         """ Should be run at the end, will set Glue bookmarks """
         _finish(self)
 
-    def set_group_files_and_size(self, groupfiles, groupsize):
+    def set_group_files(self, groupfiles):
         """ Sets extra options used with glue https://docs.aws.amazon.com/glue/latest/dg/grouping-input-files.html """
         self._groupfiles = groupfiles
+        
+    def set_group_size(self, groupsize):
+        """ Sets extra options used with glue https://docs.aws.amazon.com/glue/latest/dg/grouping-input-files.html """
         self._groupsize = groupsize
-
- 

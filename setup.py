@@ -1,7 +1,7 @@
 from setuptools import setup
 setup(
     name = 'aws_glue_etl_docker',
-    version = '0.5.0',
+    version = '0.6.0',
     packages = ['aws_glue_etl_docker'],
     license='mit',
 
