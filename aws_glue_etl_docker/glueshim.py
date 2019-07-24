@@ -3,6 +3,7 @@ import os.path
 import shutil
 import glob
 import pyspark
+import logging
 from pyspark import SparkConf, SparkContext, SQLContext
 from pprint import pprint
 
@@ -48,6 +49,9 @@ def _is_in_aws():
 
 def _get_arguments(default):
     return default
+
+def _get_logger(spark_context):
+    return logging.getLogger("broadcast")
 
 def _finish(self):
     return None
@@ -149,6 +153,9 @@ try:
     def _get_arguments(defaults):
         return getResolvedOptions(sys.argv, ['JOB_NAME'] + defaults.keys())
 
+    def _get_logger(spark_context):
+        return spark_context.get_logger()
+
     def _is_in_aws():
         return True
 
@@ -178,6 +185,11 @@ class GlueShim:
         defaults -- default dictionary of options
         """
         return _get_arguments(defaults)
+
+    def get_logger(self ):
+        """Gets the default logger for the job
+        """
+        return _get_logger(self.spark_context)
 
     def load_data(self, file_paths, dataset_name):
         """Loads data into a dataframe
