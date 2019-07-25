@@ -245,7 +245,7 @@ class GlueShim:
 
     def get_spark_context(self):
         """ Gets the spark context """
-        return self.context
+        return self.spark_context
 
     def finish(self):
         """ Should be run at the end, will set Glue bookmarks """
