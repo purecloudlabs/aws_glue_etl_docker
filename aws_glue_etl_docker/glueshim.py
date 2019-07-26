@@ -12,13 +12,16 @@ def _load_data(filePaths, dataset_name, spark_context, groupfiles, groupsize):
     return sqlContext.read.json(filePaths)
 
 
-def _load_data_from_catalog(database, table_name, spark_context):
-    sqlContext = SQLContext(spark_context)
-    return (sqlContext
-            .read
-            .option("header", "true")
-            .option("mode", "DROPMALFORMED")
-            .csv(database))
+def _load_data_from_catalog(database, table_name, fileType, spark_context):
+    if fileType == "csv":
+        sqlContext = SQLContext(spark_context)
+        return (sqlContext
+                .read
+                .option("header", "true")
+                .option("mode", "DROPMALFORMED")
+                .csv(database))
+    else:
+        return _load_data(database, table_name, spark_context, '', '')
 
 def _write_csv(dataframe, bucket, location, dataset_name, spark_context):
     output_path = '/data/' + bucket + '/' + location
@@ -81,7 +84,7 @@ try:
 
         return glue0.toDF()
 
-    def _load_data_from_catalog(database, table_name, context):
+    def _load_data_from_catalog(database, table_name, type, context):
         dynamic_frame = context.create_dynamic_frame.from_catalog(
             database=database, table_name=table_name)
         return dynamic_frame.toDF()
@@ -200,14 +203,14 @@ class GlueShim:
         """
         return _load_data(file_paths, dataset_name, self.spark_context, self._groupfiles, self._groupsize)
 
-    def load_data_from_catalog(self, database, table_name):
+    def load_data_from_catalog(self, database, table_name, type = "csv"):
         """Loads data into a dataframe from the glue catalog
 
         Keyword arguments:
         database -- the glue database to read from
         table_name -- the table name to read
         """
-        return _load_data_from_catalog(database, table_name, self.spark_context)
+        return _load_data_from_catalog(database, table_name, type, self.spark_context)
 
     def get_all_files_with_prefix(self, bucket, prefix):
         """Given a bucket and file prefix, this method will return a list of all files with that prefix
