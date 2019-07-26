@@ -9,6 +9,13 @@ from pprint import pprint
 
 def _load_data(filePaths, dataset_name, spark_context, groupfiles, groupsize):
     sqlContext = SQLContext(spark_context)
+
+    return (sqlContext
+    .read
+    .option("multiLine", "true")
+    .option("inferSchema", "true")
+    .json(filePaths))
+
     return sqlContext.read.json(filePaths)
 
 
